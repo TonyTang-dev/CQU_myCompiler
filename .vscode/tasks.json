@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "g++.exe build active file",
+			"command": "F:\\VS_Code\\G++Compile\\bin\\g++.exe",
+			"args": [
+				"-g",
+				"-Wall",
+				"-std=c++11",
+				"${file}",
+				"-o",
+				"${fileDirname}\\${fileBasenameNoExtension}.exe"
+			],
+			"options": {
+				"cwd": "F:\\VS_Code\\G++Compile\\bin"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}

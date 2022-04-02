@@ -14,22 +14,34 @@ class lexicalAnalysis{
         bool isLowletter(char ch);
         bool isDigit(char ch);
 
-        void lexicalAnalyse(FILE *fpin);
+        void lexicalAnalyse(FILE *fpin, FILE *fout);
 
     private:
-        string KEYWORD[15]={"if","else","void","return","while","then","for","do",      //å…³é”®å­—
-                    "int","char","double","float","case","cin","cout"};
-        char SEPARATER[8]={';',',','{','}','[',']','(',')'};    //åˆ†éš”ç¬¦
-        char OPERATOR[8]={'+','-','*','/','>','<','=','!'};     //è¿ç®—ç¬¦
-        char FILTER[4]={' ','\t','\r','\n'};                    //è¿‡æ»¤ç¬¦
-        const int IDENTIFIER=100;         //æ ‡è¯†ç¬¦å€¼
-        const int CONSTANT=101;           //å¸¸æ•°å€¼
-        const int FILTER_VALUE=102;       //è¿‡æ»¤å­—ç¬¦å€¼
+		string KEYWORD[15]={
+			"const","int","char","void","main","if","else","switch","case",
+			"default","while","for","scanf","printf","return"
+		};
+		string keyName[15]={
+			"CONSTTK","INTTK","CHARTK","VOIDTK","MAINTK","IFTK","ELSETK","SWITCHTK",
+			"CASETK","DEFAULTTK","WHILETK","FORTK","SCANFTK","PRINTFTK","RETURNTK"
+		};
+        char SEPARATER[8]={';',',','{','}','[',']','(',')'};    //·Ö¸ô·û
+        string separaterName[8]={"SEMICN","COMMA","LBRACE","RBRACE","LBRACK","RBRACK",
+					"LPARENT","RPARENT"
+		};
+        char OPERATOR[8]={'+','-','*','/','>','<','=','!'};     //ÔËËã·û
+		string operatorName[8]={
+			"PLUS","MINU","MULT","DIV","GSS","LSS","ASSIGN","NOT"
+		};
+        const int IDENTIFIER=100;         //±êÊ¶·ûÖµ
+        const int CONSTANT=101;           //³£ÊýÖµ
+        const int FILTER_VALUE=102;       //¹ýÂË×Ö·ûÖµ
 };
 
 bool lexicalAnalysis::isKeyword(string word){
     for(int i=0;i<15;i++){
         if(KEYWORD[i] == word){
+        	cout<<keyName[i];
             return true;
         }
     }
@@ -40,6 +52,7 @@ bool lexicalAnalysis::isKeyword(string word){
 bool lexicalAnalysis::isSeparater(char ch){
     for(int i=0;i<8;i++){
         if(SEPARATER[i] == ch){
+        	cout<<separaterName[i];
             return true;
         }
     }
@@ -49,6 +62,7 @@ bool lexicalAnalysis::isSeparater(char ch){
 bool lexicalAnalysis::isOperator(char ch){
     for(int i=0;i<8;i++){
         if(OPERATOR[i] == ch){
+        	cout<<operatorName[i];
             return true;
         }
     }
@@ -79,7 +93,7 @@ bool lexicalAnalysis::isDigit(char ch){
     return false;
 }
 
-void lexicalAnalysis::lexicalAnalyse(FILE *fpin){
+void lexicalAnalysis::lexicalAnalyse(FILE *fpin, FILE *fout){
     char ch = ' ';
     string arr = "";
 
@@ -92,12 +106,12 @@ void lexicalAnalysis::lexicalAnalyse(FILE *fpin){
                 ch = fgetc(fpin);
             }
 
-            // å…³é”®å­—åˆ¤æ–­
+            // ¹Ø¼ü×ÖÅÐ¶Ï
             if(isKeyword(arr)){
-                cout<<"å…³é”®å­—ï¼š"<<arr<<endl;
+                cout<<" "<<arr<<endl;
             }
             else{
-                cout<<"æ ‡è¯†ç¬¦ï¼š"<<arr<<endl;
+                cout<<"IDENFR "<<arr<<endl;
             }
         }
         else if(isDigit(ch)){
@@ -108,7 +122,7 @@ void lexicalAnalysis::lexicalAnalyse(FILE *fpin){
 
             fseek(fpin, -1L, SEEK_CUR);
 
-            cout<<"æ•´å½¢æ•°ï¼š"<<arr<<endl;
+            cout<<"INTCON "<<arr<<endl;
         }
         else if(isUpletter(ch) || isLowletter(ch) || ch == '_'){
             while(isUpletter(ch) || isLowletter(ch) || ch == '_' ||isDigit(ch)){
@@ -118,69 +132,85 @@ void lexicalAnalysis::lexicalAnalyse(FILE *fpin){
 
             fseek(fpin, -1L, SEEK_CUR);
 
-            cout<<"æ ‡è¯†ç¬¦ï¼š"<<arr<<endl;
+            cout<<"IDENFR "<<arr<<endl;
         }
         else{
-            switch(ch){
-                case '+':
-                case '-':
-                case '*':
-                case '/':
-                case '>':
-                case '<':
-                case '=':
-                case '!':{
-                    arr += ch;
-                    cout<<"è¿ç®—ç¬¦ï¼š"<<arr<<endl;
-                    break;
-                }
-
-                case ';':
-                case ',':
-                case '(':
-                case ')':
-                case '[':
-                case ']':
-                case '{':
-                case '}':{
-                    arr += ch;
-                    cout<<"åˆ†éš”ç¬¦ï¼š"<<arr<<endl;
-                    break;
-                }
-
-                default:{
-                    cout<<"æ— æ³•è¯†åˆ«"<<endl;
-                    break;
-                }
-            }
+        	for(int j=0;j<8;j++){
+        		if(ch == SEPARATER[j]){
+        			cout<<separaterName[j]<<" "<<ch<<endl;
+					continue;
+				}
+			}
+			for(int k=0;k<8;k++){
+				if(ch == OPERATOR[k]){
+        			cout<<operatorName[k]<<" "<<ch<<endl;
+					continue;
+				}
+			}
+//            switch(ch){
+//                case '+':
+//                case '-':
+//                case '*':
+//                case '/':
+//                case '>':
+//                case '<':
+//                case '=':
+//                case '!':{
+//                    arr += ch;
+//                    cout<<"ÔËËã·û£º"<<arr<<endl;
+//                    break;
+//                }
+//
+//                case ';':
+//                case ',':
+//                case '(':
+//                case ')':
+//                case '[':
+//                case ']':
+//                case '{':
+//                case '}':{
+//                    arr += ch;
+//                    cout<<"·Ö¸ô·û£º"<<arr<<endl;
+//                    break;
+//                }
+//
+//                default:{
+//                    cout<<"ÎÞ·¨Ê¶±ð"<<endl;
+//                    break;
+//                }
+//            }
         }
     }
 }
 
 
 int main(){
-    char inFile[40];
+    char inFile[40]= "testfile.txt";
+    char outFile[40]= "output.txt";
+    
     FILE *fpin;
-    cout<<"è¯·é€‰æ‹©æºæ–‡ä»¶ï¼š";
-
+    FILE *fout;
+    
+    fout = fopen(outFile, "w");
+    
     while(true){
-        cin>>inFile;
-
         if((fpin = fopen(inFile, "r")) != NULL){
             break;
         }
         else{
-            cout<<"æ–‡ä»¶ä¸å­˜åœ¨ï¼Œè¯·å†æ¬¡è¾“å…¥ï¼š";
+            cout<<"ÎÄ¼þ²»´æÔÚ£¬ÇëÔÙ´ÎÊäÈë£º";
         }
     }
 
-    cout<<"===============åˆ†æžç»“æžœ==============="<<endl;
-
     lexicalAnalysis ins;
 
-    ins.lexicalAnalyse(fpin);
+    ins.lexicalAnalyse(fpin, fout);
+    
+    fprintf(fout, "%s\n", "hjsdjhjf");
+	fprintf(fout, "%s\n", "hjsdjhjf");
 
-
+	fclose(fpin);
+	fclose(fout);
     system("pause");
     return 0;
 }

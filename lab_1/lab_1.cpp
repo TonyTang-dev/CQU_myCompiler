@@ -27,20 +27,20 @@ class lexicalAnalysis{
 			"CONSTTK","INTTK","CHARTK","VOIDTK","MAINTK","IFTK","ELSETK","SWITCHTK",
 			"CASETK","DEFAULTTK","WHILETK","FORTK","SCANFTK","PRINTFTK","RETURNTK"
 		};
-        char SEPARATER[9]={';',',',':','{','}','[',']','(',')'};    //·Ö¸ô·û
+        char SEPARATER[9]={';',',',':','{','}','[',']','(',')'};    //ï¿½Ö¸ï¿½ï¿½ï¿½
         string separaterName[9]={"SEMICN","COMMA","COLON","LBRACE","RBRACE","LBRACK","RBRACK",
 					"LPARENT","RPARENT"
 		};
-        char OPERATOR[8]={'+','-','*','/','<','>','=','!'};     //ÔËËã·û
+        char OPERATOR[8]={'+','-','*','/','<','>','=','!'};     //ï¿½ï¿½ï¿½ï¿½ï¿½
 		string operatorName[8]={
 			"PLUS","MINU","MULT","DIV","LSS","GRE","ASSIGN","NOT"
 		};
 		string operatorNameK[4]={
 			"LEQ","GEQ","EQL","NEQ"
 		};
-        const int IDENTIFIER=100;         //±êÊ¶·ûÖµ
-        const int CONSTANT=101;           //³£ÊýÖµ
-        const int FILTER_VALUE=102;       //¹ýÂË×Ö·ûÖµ
+        const int IDENTIFIER=100;         //ï¿½ï¿½Ê¶ï¿½ï¿½Öµ
+        const int CONSTANT=101;           //ï¿½ï¿½ï¿½ï¿½Öµ
+        const int FILTER_VALUE=102;       //ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½Öµ
 };
 
 bool lexicalAnalysis::isKeyword(string word, FILE *fout){
@@ -126,7 +126,7 @@ void lexicalAnalysis::lexicalAnalyse(FILE *fpin, FILE *fout){
 
             fseek(fpin, -1L, SEEK_CUR);
 
-            // ¹Ø¼ü×ÖÅÐ¶Ï
+            // ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
             if(isKeyword(arr, fout)){
 //                cout<<" "<<arr<<endl;
                 fprintf(fout, "%s\n", arr.c_str());
@@ -203,8 +203,8 @@ void lexicalAnalysis::lexicalAnalyse(FILE *fpin, FILE *fout){
 
 
 int main(){
-    char inFile[40]= "testfile.txt";
-    char outFile[40]= "output.txt";
+    char inFile[40]= "lab_1/testfile.txt";
+    char outFile[40]= "lab_1/output.txt";
 
     FILE *fpin;
     FILE *fout;

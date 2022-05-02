@@ -7,6 +7,6 @@ int gets1(int var1,int var2){
     return (change1);
 }
 void main(){
-    printf("Hello World");
+    printF("Hello World");
     printf(gets1(10, 20));
 }

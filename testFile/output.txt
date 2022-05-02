@@ -48,9 +48,9 @@ MAINTK main
 LPARENT (
 RPARENT )
 LBRACE {
-PRINTFTK printf
+PRINTFTK printF
 LPARENT (
-STRCON Hello World
+STRCON Hello \n World
 RPARENT )
 SEMICN ;
 PRINTFTK printf

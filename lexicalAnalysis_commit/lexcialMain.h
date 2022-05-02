@@ -92,6 +92,9 @@ FILE *fout;
 /* 整数 */
 int tkvalue=0;
 
+/* 全局的IDENTIFIER类型 */
+char IDENTIFIERBUF[30] = "IDENFR";
+
 
 /* 词法状态枚举定义 */
 enum e_LexState{
@@ -121,8 +124,13 @@ struct TkWord2{
     struct Symbol *sym_identifier;  //指向单词所表示的标识符
     char *tkName;               //单词的类别码
 };
-
 typedef struct TkWord2 TkWord;
+
+/* 在初始化单词表（标识符+关键字）时的存储类型与单词 */
+struct charArray{
+    char word[20];
+    char type[30];
+};
 
 
 /* token字符串 */
@@ -135,7 +143,7 @@ TkWord *tk_hashtable[MAXKEY];   //哈希表
 DynArray tktable;               //单词表
 
 /* 写入文件的单词类型,如main的类型:MAINTK */
-char *tkType = " ";
+char *tkType = NULL;
 
 
 
@@ -208,7 +216,8 @@ void error(char *fmt,...){
 
 /* 提示错误，缺少语法成分 */
 void expect(char *msg){
-    error("缺少%s",msg);
+    // error("缺少%s",msg);
+    cout<<"缺少"<<msg;
 }
 
 /* 取得单词v所代表的源码字符串 */
@@ -230,7 +239,8 @@ char *get_tkstr(int v){
 /* 跳过单词c，取下一单词，如果当前单词不是c，提示错误 */
 void skip(int c){
     if(token != c){
-        error("缺少'%s'",get_tkstr(c));
+        // error("缺少'%s'",get_tkstr(c));
+        cout<<"缺少"<<get_tkstr(c);
     }
     get_token();
 }
@@ -332,7 +342,11 @@ void dynarray_realloc(DynArray *parr, int new_size){
 void dynarray_add(DynArray *parr, void *data){
     int count;
     count = parr->count+1;
-    if(count*sizeof(void*) > parr->capacity){
+
+    int curCapacity = (int)count*sizeof(void*);
+    int lastCapacity = (int)parr->capacity;
+
+    if(curCapacity > lastCapacity){
         dynarray_realloc(parr, count*sizeof(void*));
     }
     parr->data[count-1] = data;
@@ -444,7 +458,10 @@ TkWord *tkword_insert(char *p){
     // 小写格式查找
     // 把小写格式放前面的原因是：如果小写格式查找到了证明是关键字
     // 小写格式未找到则可能是标识符，也可能不存在
-    tp=tkword_find(sourcestr.data, keyno);
+    // 由于不同的字符组是有不一样的哈希值的，所以对关键字的查找也要
+    // 重新计算哈希值
+    int hashKey = elf_hash(sourcestr.data);
+    tp=tkword_find(sourcestr.data, hashKey);
 
     // 如果小写格式未查找到，则源格式再查找一遍
     // 如果已经找到，那么不需要插入
@@ -466,7 +483,11 @@ TkWord *tkword_insert(char *p){
         s=(char*)tp+sizeof(TkWord);
         // 内容，即代表的字符串值
         tp->spelling = (char*)s;
-         tp->tkName = "IDENFR";
+        // 如果使用每次都声明一个buf数组，那么每次都会对此数组进行操作，可能会报错
+        // 我的办法是，将该数组声明为全局变量，使用到的指针都指向它
+        /* 因为重新声明的时候，系统重新分配的地址就变了，原先的指针就找不到它了 */
+        // char buf3[30] = "IDENFR";
+        tp->tkName = IDENTIFIERBUF;
         // 将目标字符串复制到单词内容中
         for(end=p+length;p<end;){
             *s++ = *p++;
@@ -483,62 +504,122 @@ TkWord *tkword_insert(char *p){
 /* 词法分析初始化 */
 void init_lex(){
     TkWord *tp;
+
+    // 由于直接用字符串给字符数组指针复制会报警告，所以定义一个字符数组缓冲
+    static struct charArray array[60] = {
+        {"+","PLUS"},
+        {"-","MINU"},
+        {"*","MULT"},
+        {"/","DIV"},
+        {"%","MOD"},
+        {"==","EQL"},
+        {"!=","NEQ"},
+        {"<","LSS"},
+        {"<=","LEQ"},
+        {">","GRE"},
+        {">=","GEQ"},
+        {"=","ASSIGN"},
+        {"->","POINTER"},
+        {".","DOT"},
+        {"&","AND"},
+        {"(","LPARENT"},
+        {")","RPARENT"},
+        {"[","LBRACK"},
+        {"]","RBRACK"},
+        {"{","LBRACE"},
+        {"}","RBRACE"},
+        {":","COLON"},
+        {";","SEMICN"},
+        {",","COMMA"},
+        {"...","ELLIPSIS"},
+        {"End_Of_File","EOF"},
+
+        {"整型常量","INTCON"},
+        {"字符常量","CHARCON"},
+        {"字符串常量","STRCON"},
+
+        {"char","CHARTK"},
+        {"short","SHORTTK"},
+        {"int","INTTK"},
+        {"void","VOIDTK"},
+        {"struct","STRUCTTK"},
+
+        {"if","IFTK"},
+        {"else","ELSETK"},
+        {"const","CONSTTK"},
+        {"for","FORTK"},
+        {"continue","CONTINUETK"},
+        {"break","BREAKTK"},
+        {"return","RETURNTK"},
+        {"sizeof","SIZEOFTK"},
+        {"main","MAINTK"},
+        {"switch","SWITCHTK"},
+        {"case","CASETK"},
+        {"default","DEFAULTTK"},
+        {"while","WHILETK"},
+        {"scanf","SCANFTK"},
+        {"printf","PRINTFTK"},
+        {"__align","ALIGN"},
+        {"__cdecl","CDECL"},
+        {"__stdcal","STDCAL"}
+    };
+
     static TkWord keywords[]={
-        {TK_PLUS, NULL, "+", NULL, NULL,"PLUS"},
-        {TK_MINUS, NULL, "-", NULL, NULL,"MINU"},
-        {TK_STAR, NULL, "*", NULL, NULL,"MULT"},
-        {TK_DIVIDE, NULL, "/", NULL, NULL,"DIV"},
-        {TK_MOD, NULL, "%", NULL, NULL,"MOD"},
-        {TK_EQ, NULL, "==", NULL, NULL,"EQL"},
-        {TK_NEQ, NULL, "!=", NULL, NULL,"NEQ"},
-        {TK_LT, NULL, "<", NULL, NULL,"LSS"},
-        {TK_LEQ, NULL, "<=", NULL, NULL,"LEQ"},
-        {TK_GT, NULL, ">", NULL, NULL,"GRE"},
-        {TK_GEQ, NULL, ">=", NULL, NULL,"GEQ"},
-        {TK_ASSIGN, NULL, "=", NULL, NULL,"ASSIGN"},
-        {TK_POINTSTO, NULL, "->", NULL, NULL,"POINTER"},
-        {TK_DOT, NULL, ".", NULL, NULL,"DOT"},
-        {TK_AND, NULL, "&", NULL, NULL,"AND"},
-        {TK_OPENPA, NULL, "(", NULL, NULL,"LPARENT"},
-        {TK_CLOSEPA, NULL, ")", NULL, NULL,"RPARENT"},
-        {TK_OPENBR, NULL, "[", NULL, NULL,"LBRACK"},
-        {TK_CLOSEBR, NULL, "]", NULL, NULL,"RBRACK"},
-        {TK_BEGIN, NULL, "{", NULL, NULL,"LBRACE"},
-        {TK_END, NULL, "}", NULL, NULL,"RBRACE"},
-        {TK_COLON, NULL, ":", NULL, NULL,"COLON"},
-        {TK_SEMICOLON, NULL, ";", NULL, NULL,"SEMICN"},
-        {TK_COMMA, NULL, ",", NULL, NULL,"COMMA"},
-        {TK_ELLIPSIS, NULL, "...", NULL, NULL,"ELLIPSIS"},
-        {TK_EOF, NULL, "End_Of_File", NULL, NULL,"EOF"},
+        {TK_PLUS, NULL, array[0].word, NULL, NULL,array[0].type},
+        {TK_MINUS, NULL, array[1].word, NULL, NULL,array[1].type},
+        {TK_STAR, NULL, array[2].word, NULL, NULL,array[2].type},
+        {TK_DIVIDE, NULL, array[3].word, NULL, NULL,array[3].type},
+        {TK_MOD, NULL, array[4].word, NULL, NULL,array[4].type},
+        {TK_EQ, NULL, array[5].word, NULL, NULL,array[5].type},
+        {TK_NEQ, NULL, array[6].word, NULL, NULL,array[6].type},
+        {TK_LT, NULL, array[7].word, NULL, NULL,array[7].type},
+        {TK_LEQ, NULL, array[8].word, NULL, NULL,array[8].type},
+        {TK_GT, NULL, array[9].word, NULL, NULL,array[9].type},
+        {TK_GEQ, NULL, array[10].word, NULL, NULL,array[10].type},
+        {TK_ASSIGN, NULL, array[11].word, NULL, NULL,array[11].type},
+        {TK_POINTSTO, NULL, array[12].word, NULL, NULL,array[12].type},
+        {TK_DOT, NULL, array[13].word, NULL, NULL,array[13].type},
+        {TK_AND, NULL, array[14].word, NULL, NULL,array[14].type},
+        {TK_OPENPA, NULL, array[15].word, NULL, NULL,array[15].type},
+        {TK_CLOSEPA, NULL, array[16].word, NULL, NULL,array[16].type},
+        {TK_OPENBR, NULL, array[17].word, NULL, NULL,array[17].type},
+        {TK_CLOSEBR, NULL, array[18].word, NULL, NULL,array[18].type},
+        {TK_BEGIN, NULL, array[19].word, NULL, NULL,array[19].type},
+        {TK_END, NULL, array[20].word, NULL, NULL,array[20].type},
+        {TK_COLON, NULL, array[21].word, NULL, NULL,array[21].type},
+        {TK_SEMICOLON, NULL, array[22].word, NULL, NULL,array[22].type},
+        {TK_COMMA, NULL, array[23].word, NULL, NULL,array[23].type},
+        {TK_ELLIPSIS, NULL, array[24].word, NULL, NULL,array[24].type},
+        {TK_EOF, NULL, array[25].word, NULL, NULL,array[25].type},
 
-        {TK_CINT, NULL, "整型常量", NULL, NULL,"INTCON"},
-        {TK_CCHAR, NULL, "字符常量", NULL, NULL,"CHARCON"},
-        {TK_CSTR, NULL, "字符串常量", NULL, NULL,"STRCON"},
+        {TK_CINT, NULL, array[26].word, NULL, NULL,array[26].type},
+        {TK_CCHAR, NULL, array[27].word, NULL, NULL,array[27].type},
+        {TK_CSTR, NULL, array[28].word, NULL, NULL,array[28].type},
 
-        {KW_CHAR, NULL, "char", NULL, NULL,"CHARTK"},
-        {KW_SHORT, NULL, "short", NULL, NULL,"SHORTTK"},
-        {KW_INT, NULL, "int", NULL, NULL,"INTTK"},
-        {KW_VOID, NULL, "void", NULL, NULL,"VOIDTK"},
-        {KW_STRUCT, NULL, "struct", NULL, NULL,"STRUCTTK"},
+        {KW_CHAR, NULL, array[29].word, NULL, NULL,array[29].type},
+        {KW_SHORT, NULL, array[30].word, NULL, NULL,array[30].type},
+        {KW_INT, NULL, array[31].word, NULL, NULL,array[31].type},
+        {KW_VOID, NULL, array[32].word, NULL, NULL,array[32].type},
+        {KW_STRUCT, NULL, array[33].word, NULL, NULL,array[33].type},
 
-        {KW_IF, NULL, "if", NULL, NULL,"IFTK"},
-        {KW_ELSE, NULL, "else", NULL, NULL,"ELSETK"},
-        {KW_CONST, NULL, "const", NULL, NULL,"CONSTTK"},
-        {KW_FOR, NULL, "for", NULL, NULL,"FORTK"},
-        {KW_CONTINUE, NULL, "continue", NULL, NULL,"CONTINUETK"},
-        {KW_BREAK, NULL, "break", NULL, NULL,"BREAKTK"},
-        {KW_RETURN, NULL, "return", NULL, NULL,"RETURNTK"},
-        {KW_SIZEOF, NULL, "sizeof", NULL, NULL,"SIZEOFTK"},
-        {KW_MAIN, NULL, "main", NULL, NULL,"MAINTK"},
-        {KW_SWITCH, NULL, "switch", NULL, NULL,"SWITCHTK"},
-        {KW_CASE, NULL, "case", NULL, NULL,"CASETK"},
-        {KW_DEFAULT, NULL, "default", NULL, NULL,"DEFAULTTK"},
-        {KW_WHILE, NULL, "while", NULL, NULL,"WHILETK"},
-        {KW_SCANF, NULL, "scanf", NULL, NULL,"SCANFTK"},
-        {KW_PRINTF, NULL, "printf", NULL, NULL,"PRINTFTK"},
-        {KW_ALIGN, NULL, "__align", NULL, NULL,"ALIGN"},
-        {KW_CDECL, NULL, "__cdecl", NULL, NULL,"CDECL"},
-        {KW_STDCALL, NULL, "__stdcal", NULL, NULL,"STDCAL"},
+        {KW_IF, NULL, array[34].word, NULL, NULL,array[34].type},
+        {KW_ELSE, NULL, array[35].word, NULL, NULL,array[35].type},
+        {KW_CONST, NULL, array[36].word, NULL, NULL,array[36].type},
+        {KW_FOR, NULL, array[37].word, NULL, NULL,array[37].type},
+        {KW_CONTINUE, NULL, array[38].word, NULL, NULL,array[38].type},
+        {KW_BREAK, NULL, array[39].word, NULL, NULL,array[39].type},
+        {KW_RETURN, NULL, array[40].word, NULL, NULL,array[40].type},
+        {KW_SIZEOF, NULL, array[41].word, NULL, NULL,array[41].type},
+        {KW_MAIN, NULL, array[42].word, NULL, NULL,array[42].type},
+        {KW_SWITCH, NULL, array[43].word, NULL, NULL,array[43].type},
+        {KW_CASE, NULL, array[44].word, NULL, NULL,array[44].type},
+        {KW_DEFAULT, NULL, array[45].word, NULL, NULL,array[45].type},
+        {KW_WHILE, NULL, array[46].word, NULL, NULL,array[46].type},
+        {KW_SCANF, NULL, array[47].word, NULL, NULL,array[47].type},
+        {KW_PRINTF, NULL, array[48].word, NULL, NULL,array[48].type},
+        {KW_ALIGN, NULL, array[49].word, NULL, NULL,array[49].type},
+        {KW_CDECL, NULL, array[50].word, NULL, NULL,array[50].type},
+        {KW_STDCALL, NULL, array[51].word, NULL, NULL,array[51].type},
         {0,         NULL, NULL, NULL, NULL,NULL}
     };
 
@@ -579,7 +660,8 @@ void parse_comment(){
             }
         }
         else{
-            error("一直到文件尾未看到配对的注释结束符");
+            // error("一直到文件尾未看到配对的注释结束符");
+            cout<<"一直到文件尾未看到配对的注释结束符";
             return;
         }
     }while(1);
@@ -587,7 +669,7 @@ void parse_comment(){
 
 /* 空白字符处理 */
 void skip_white_space(){
-    while(ch==' ' || ch=='\t' || ch=='\r'){
+    while(ch==' ' || ch=='\t' || ch=='\r' || ch=='\n'){
         if(ch=='\r'){
             getch();
             if(ch != '\n'){
@@ -604,7 +686,7 @@ void skip_white_space(){
 /* 预处理，忽略空白字符及注释 */
 void preprocess(){
     while(1){
-        if(ch==' ' || ch=='\t' || ch=='\r'){
+        if(ch==' ' || ch=='\t' || ch=='\r' || ch=='\n'){
             skip_white_space();
         }
         else if(ch=='/'){
@@ -711,70 +793,79 @@ void parse_string(char sep){
         if(ch==sep){
             break;
         }
-        else if(ch=='\\'){
-            dynstring_chcat(&sourcestr,ch);
-            getch();
-            switch(ch){
-                case '0':{
-                    c='\0';
-                    break;
-                }
-                case 'a':{
-                    c='\a';
-                    break;
-                }
-                case 'b':{
-                    c='\b';
-                    break;
-                }
-                case 't':{
-                    c='\t';
-                    break;
-                }
-                case 'n':{
-                    c='\n';
-                    break;
-                }
-                case 'v':{
-                    c='\v';
-                    break;
-                }
-                case 'f':{
-                    c='\f';
-                    break;
-                }
-                case 'r':{
-                    c='\r';
-                    break;
-                }
-                case '\"':{
-                    c='\"';
-                    break;
-                }
-                case '\'':{
-                    c='\'';
-                    break;
-                }
-                case '\\':{
-                    c='\\';
-                    break;
-                }
-                default:{
-                    c=ch;
-                    if(c>='!' && c<='~'){
-                        warning("非法转义字符:\'\\%c\'",c);
-                    }
-                    else{
-                        warning("非法转义字符:\'\\0x%x\'",c);
-                    }
-                    break;
-                }
-            }
 
-            dynstring_chcat(&tkstr,c);
-            dynstring_chcat(&sourcestr,ch);
-            getch();
-        }
+        /* 由于字符串暂时保持原样输出，所以暂时不对转义字符做处理 */
+        // else if(ch=='\\'){
+        //     /* tkstr原先没有在这里写入'\'字符，导致最后输出的内容被转义，从而出错 */
+        //     dynstring_chcat(&tkstr,ch);
+        //     dynstring_chcat(&sourcestr,ch);
+        //     /* 写入了'\'符号之后，转义字符，输出被转义字符即可，如\\n再连接n即可 
+        //         直接的换行似乎会自动换行的，不用处理
+        //     */
+        //     getch();
+        //     switch(ch){
+        //         case '0':{
+        //             c='\0';
+        //             break;
+        //         }
+        //         case 'a':{
+        //             c='\a';
+        //             break;
+        //         }
+        //         case 'b':{
+        //             c='\b';
+        //             break;
+        //         }
+        //         case 't':{
+        //             c='\t';
+        //             break;
+        //         }
+        //         case 'n':{
+        //             c='\n';
+        //             break;
+        //         }
+        //         case 'v':{
+        //             c='\v';
+        //             break;
+        //         }
+        //         case 'f':{
+        //             c='\f';
+        //             break;
+        //         }
+        //         case 'r':{
+        //             c='\r';
+        //             break;
+        //         }
+        //         case '\"':{
+        //             c='\"';
+        //             break;
+        //         }
+        //         case '\'':{
+        //             c='\'';
+        //             break;
+        //         }
+        //         case '\\':{
+        //             c='\\';
+        //             break;
+        //         }
+        //         default:{
+        //             c=ch;
+        //             if(c>='!' && c<='~'){
+        //                 // warning("非法转义字符:\'\\%c\'",c);
+        //                 cout<<"非法转义字符:\'"<<c<<"\'";
+        //             }
+        //             else{
+        //                 // warning("非法转义字符:\'\\0x%x\'",c);
+        //                 cout<<"非法转义字符:\'"<<c<<"\'"<<endl;
+        //             }
+        //             break;
+        //         }
+        //     }
+
+        //     dynstring_chcat(&tkstr,c);
+        //     dynstring_chcat(&sourcestr,ch);
+        //     getch();
+        // }
         else{
             dynstring_chcat(&tkstr,ch);
             dynstring_chcat(&sourcestr,ch);
@@ -864,7 +955,8 @@ void get_token(){
                 getch();
             }
             else{
-                error("暂不支持!操作");
+                // error("暂不支持!操作");
+                cout<<"暂不支持!操作";
             }
             break;
         }
@@ -892,10 +984,11 @@ void get_token(){
         }
         case '.':{
             getch();
-            if(ch='.'){
+            if(ch=='.'){
                 getch();
                 if(ch != '.'){
-                    error("省略号拼写错误");
+                    // error("省略号拼写错误");
+                    cout<<"省略号拼写错误";
                 }
                 else{
                     token=TK_ELLIPSIS;
@@ -914,6 +1007,11 @@ void get_token(){
         }
         case ';':{
             token=TK_SEMICOLON;
+            getch();
+            break;
+        }
+        case ':':{
+            token=TK_COLON;
             getch();
             break;
         }
@@ -975,7 +1073,8 @@ void get_token(){
             break;
         }
         default:{
-            error("--->invalid char：\\x%02x",ch);
+            // error("--->invalid char:\\x%02x",ch);
+            cout<<"--->invalid char:"<<ch-'\0'<<endl;
             getch();
             break;
         }
@@ -1040,6 +1139,7 @@ void color_token(int lex_state){
             // 在cin和cstring之间，get_tkstr()返回的是带有引号的内容，这是为了照顾控制台输出
             // 在关键字和标识符中，sourcestr不是源字符串，这里没有统一，后期再做统一优化
             if(token != TK_EOF){
+                // cout<<"++++++++++"<<tkType<<" "<<out2File<<endl;
                 fprintf(fout,"%s %s\n",tkType,out2File);
             }
 

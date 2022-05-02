@@ -29,7 +29,7 @@ void cleanup(){
 
 int main(int argc, char **argv){
     char infile[40] = "testfile.txt";
-    fin = fopen(infile, "rb");//argv[1]
+    fin = fopen(infile, "r");//argv[1]
     
     fout = fopen("output.txt","w");
 

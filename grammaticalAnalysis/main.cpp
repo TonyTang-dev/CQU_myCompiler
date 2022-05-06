@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<iostream>
 
-#include "lexcialMain.h"
+#include "lexcialAnalysis.h"
 
 using namespace std;
 
@@ -28,10 +28,10 @@ void cleanup(){
 
 
 int main(int argc, char **argv){
-    char infile[20] = "lab_1/testfile.txt";
+    char infile[30] = "testFile/testfile.txt";
     fin = fopen(infile, "rb");//argv[1]
     
-    fout = fopen("lexicalAnalysis_integrate/output.txt","w");
+    fout = fopen("lexicalAnalysis/output.txt","w");
 
     if(!fin){
         printf("--->Fail to open source file");

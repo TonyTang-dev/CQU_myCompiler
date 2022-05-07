@@ -59,10 +59,6 @@ void translation_unit(){
     while(token != TK_EOF){
         external_declaration(SC_GLOBAL);
     }
-
-    // 语法分析结束
-    // 暂时写入主函数结束和程序文法结束
-    fprintf(fout, "%s\n%s\n",grammarTypeArray[20].type,grammarTypeArray[21].type);
 }
 
 /* =================================
@@ -139,31 +135,16 @@ void external_declaration(int l){
             }
             // 逗号，完成一个声明
             if(token == TK_COMMA){
-                if(grammarType != grammarTypeArray[24].type){
-                    fprintf(fout, "%s\n",grammarType);
-                }
+                fprintf(fout, "<%s>\n",grammarType);
                 get_token();
             }
             // 考虑了所有情况，最后就是分号结尾的结束了
             else{
                 syntax_state = SNTX_LF_HT;
-                if(grammarType != grammarTypeArray[24].type ){
-                    fprintf(fout, "%s\n",grammarType);
-                }
-
-                // 不论是谁，只要到达分号，说明该语句结束，
-                // 把变量状态置为非常量，同时要输出常量定义标识
-                // 这对程序影响较大，暂时先这样写
-                if(isConstDef == 1){
-                    isConstDef=0;
-                    fprintf(fout, "%s\n",grammarTypeArray[2].type);
-                }
+                fprintf(fout, "<%s>\n",grammarType);
                 skip(TK_SEMICOLON);
                 break;
             }
-
-            // 将状态置空
-            grammarType = grammarTypeArray[24].type;
         }
     }
 }
@@ -175,8 +156,6 @@ void external_declaration(int l){
  ==========================*/
  int type_specifier(){
      int type_found = 0;
-
-    //  状态默认不是常量定义,只有到达分号自动重置为非常量
      switch(token){
          case KW_CHAR:
             type_found = 1;
@@ -198,8 +177,6 @@ void external_declaration(int l){
         case KW_CONST:
             type_found = 1;
             syntax_state = SNTX_SP;
-            // 设置状态为常量定义
-            isConstDef = 1;
             get_token();
             // 自调用判断类型
             type_specifier();
@@ -390,10 +367,6 @@ void direct_declarator(){
 void direct_declarator_postfix(){
     int n=0;
     if(token == TK_OPENPA){
-        // 函数声明
-        // 在此输出函数定义标识
-        fprintf(fout, "%s\n",grammarTypeArray[6].type);
-
         parameter_type_list(n);
     }
     else if(token == TK_OPENBR){
@@ -421,7 +394,7 @@ void parameter_type_list(int func_call){
         declarator();
 
         if(token == TK_CLOSEPA){
-            fprintf(fout,"%s\n",grammarTypeArray[7].type);
+            fprintf(fout,"<参数表>\n");
             break;
         }
 
@@ -799,10 +772,8 @@ void primary_expression(){
             get_token();
             break;
         case TK_CCHAR:
-            // 写入值的类型,char默认是变量定义
-            // 只有在const状态下输出的常量定义
-            // 所以默认定义为”变量定义“
-            grammarType = grammarTypeArray[5].type;
+            // 写入值的类型
+            grammarType = grammarTypeArray[2].type;
             get_token();
             break;
         case TK_CSTR:

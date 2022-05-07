@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<iostream>
 
-#include "lexcialAnalysis.h"
+#include "grammatic.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ int main(int argc, char **argv){
     char infile[30] = "testFile/testfile.txt";
     fin = fopen(infile, "rb");//argv[1]
     
-    fout = fopen("lexicalAnalysis/output.txt","w");
+    fout = fopen("grammaticalAnalysis/output.txt","w");
 
     if(!fin){
         printf("--->Fail to open source file");
@@ -41,11 +41,14 @@ int main(int argc, char **argv){
     init();
 
     getch();
-    do{
-        get_token();
-        color_token(LEX_NORMAL);
-    }while(token != TK_EOF);
+    // do{
+    //     get_token();
+    //     color_token(LEX_NORMAL);
+    // }while(token != TK_EOF);
 
+    get_token();
+
+    translation_unit();
 
     /* 设置控制台提示语句为白色 */
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE);

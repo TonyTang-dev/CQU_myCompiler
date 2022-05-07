@@ -17,6 +17,9 @@ using namespace std;
 #include "DealError.h"
 
 
+/* 函数声明 */
+void color_token(int lex_state);
+
 
 /* 处理注释 */
 void parse_comment(){
@@ -44,7 +47,7 @@ void parse_comment(){
         }
         else{
             // error("一直到文件尾未看到配对的注释结束符");
-            cout<<"一直到文件尾未看到配对的注释结束符";
+            cout<<"cannot get annotation end note untill EOF";
             return;
         }
     }while(1);
@@ -263,6 +266,45 @@ void parse_string(char sep){
 }
 
 
+
+/* ==========================================
+语法缩进程序实现，供调用
+============================================= */
+// tab缩进
+void print_tab(int n){
+    int i=0;
+    for(;i<n;i++){
+        printf("\t");
+    }
+}
+
+// 缩进
+void syntax_indent(){
+    switch(syntax_state){
+        case SNTX_NUL:
+            color_token(LEX_NORMAL);
+            break;
+        case SNTX_SP:
+            printf(" ");
+            color_token(LEX_NORMAL);
+            break;
+        case SNTX_LF_HT:
+            {
+                if(token==TK_END){
+                    syntax_level--;
+                }
+                printf("\n");
+                print_tab(syntax_level);
+            }
+            color_token(LEX_NORMAL);
+            break;
+        case SNTX_DELAY:
+            break;
+    }
+    syntax_state = SNTX_NUL;
+}
+
+
 /* 取单词 */
 void get_token(){
     preprocess();
@@ -339,7 +381,7 @@ void get_token(){
             }
             else{
                 // error("暂不支持!操作");
-                cout<<"暂不支持!操作";
+                cout<<"cannot support operation !";
             }
             break;
         }
@@ -371,7 +413,7 @@ void get_token(){
                 getch();
                 if(ch != '.'){
                     // error("省略号拼写错误");
-                    cout<<"省略号拼写错误";
+                    cout<<"the ellipsis spelling error";
                 }
                 else{
                     token=TK_ELLIPSIS;
@@ -462,6 +504,9 @@ void get_token(){
             break;
         }
     }
+
+    /* 语法缩进调用--边取单词边缩进输出 */
+    syntax_indent();
 }
 
 /* 词法着色 */

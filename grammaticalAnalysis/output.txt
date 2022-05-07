@@ -1,0 +1,80 @@
+CONSTTK coNst
+INTTK int
+IDENFR cONst1
+ASSIGN =
+INTCON 001
+COMMA ,
+<无符号整数>
+<整数>
+IDENFR const2
+ASSIGN =
+MINU -
+INTCON 100
+SEMICN ;
+<无符号整数>
+<整数>
+<常量定义>
+CONSTTK const
+CHARTK char
+IDENFR const3
+ASSIGN =
+CHARCON _
+SEMICN ;
+<变量定义>
+<常量定义>
+INTTK int
+IDENFR change1
+SEMICN ;
+<变量定义>
+CHARTK char
+IDENFR change3
+SEMICN ;
+<变量定义>
+INTTK int
+IDENFR gets1
+LPARENT (
+<声明头部>
+INTTK int
+IDENFR var1
+COMMA ,
+INTTK int
+IDENFR var2
+RPARENT )
+<参数表>
+LBRACE {
+IDENFR change1
+ASSIGN =
+IDENFR var1
+PLUS +
+IDENFR var2
+SEMICN ;
+RETURNTK return
+LPARENT (
+IDENFR change1
+RPARENT )
+SEMICN ;
+RBRACE }
+VOIDTK void
+MAINTK main
+LPARENT (
+<声明头部>
+RPARENT )
+LBRACE {
+PRINTFTK printF
+LPARENT (
+STRCON Hello World
+RPARENT )
+SEMICN ;
+PRINTFTK printf
+LPARENT (
+IDENFR gets1
+LPARENT (
+INTCON 10
+COMMA ,
+INTCON 20
+RPARENT )
+RPARENT )
+SEMICN ;
+RBRACE }
+<主函数>
+<程序>

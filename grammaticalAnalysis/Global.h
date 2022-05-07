@@ -9,66 +9,66 @@ using namespace std;
 * 全局变量
  */
 enum e_TokenCode{
-    TK_PLUS,
-    TK_MINUS,
-    TK_STAR,
-    TK_DIVIDE,
-    TK_MOD,
-    TK_EQ,
-    TK_NEQ,
-    TK_LT,
-    TK_LEQ,
-    TK_GT,
-    TK_GEQ,
-    TK_ASSIGN,
-    TK_POINTSTO,
-    TK_DOT,
-    TK_AND,
-    TK_OPENPA,
-    TK_CLOSEPA,
-    TK_OPENBR,
-    TK_CLOSEBR,
-    TK_BEGIN,
-    TK_END,
-    TK_COLON,
-    TK_SEMICOLON,
-    TK_COMMA,
-    TK_ELLIPSIS,
-    TK_EOF,
+    TK_PLUS,            //+0
+    TK_MINUS,           //-1
+    TK_STAR,            //*2
+    TK_DIVIDE,            ///3
+    TK_MOD,            //%4
+    TK_EQ,            //==5
+    TK_NEQ,            //!=6
+    TK_LT,            //<7
+    TK_LEQ,            //<=8
+    TK_GT,            //>9
+    TK_GEQ,            //>=10
+    TK_ASSIGN,            //*=11
+    TK_POINTSTO,            //->12
+    TK_DOT,            //.13
+    TK_AND,            //&14
+    TK_OPENPA,            //(15
+    TK_CLOSEPA,            //)16
+    TK_OPENBR,            //[17
+    TK_CLOSEBR,            //]
+    TK_BEGIN,            //{
+    TK_END,            //}
+    TK_COLON,            //:
+    TK_SEMICOLON,            //;
+    TK_COMMA,            //,
+    TK_ELLIPSIS,            //...
+    TK_EOF,            //EOF
     
     /* CONST */
-    TK_CINT,
-    TK_CCHAR,
-    TK_CSTR,
+    TK_CINT,            //const int
+    TK_CCHAR,            //const char
+    TK_CSTR,            //const string
     
 
     /* KEYWORD */
-    KW_CHAR,
-    KW_SHORT,
-    KW_INT,
-    KW_VOID,
-    KW_STRUCT,
-    KW_IF,
-    KW_ELSE,
-    KW_CONST,
-    KW_FOR,
-    KW_CONTINUE,
-    KW_BREAK,
-    KW_RETURN,
-    KW_SIZEOF,
-    KW_MAIN,
-    KW_SWITCH,
-    KW_CASE,
-    KW_DEFAULT,
-    KW_WHILE,
-    KW_SCANF,
-    KW_PRINTF,
-    KW_ALIGN,
-    KW_CDECL,
-    KW_STDCALL,
+    KW_CHAR,            //char
+    KW_SHORT,            //short
+    KW_INT,            //int
+    KW_VOID,            //void
+    KW_STRUCT,            //struct
+    KW_IF,            //if
+    KW_ELSE,            //else
+    KW_CONST,            //const
+    KW_FOR,            //for
+    KW_CONTINUE,            //continue
+    KW_BREAK,            //break
+    KW_RETURN,            //return
+    KW_SIZEOF,            //sizeof
+    KW_MAIN,            //main
+    KW_SWITCH,            //switch
+    KW_CASE,            //case
+    KW_DEFAULT,            //default
+    KW_WHILE,            //while
+    KW_SCANF,            //scanf
+    KW_PRINTF,            //printf
+    KW_ALIGN,            //align
+    KW_CDECL,            //declare
+    KW_STDCALL,            //stadard caling
 
     /* IDENTIFIER */
-    TK_IDENT
+    TK_IDENT            //identifier
 };
 
 /* token */
@@ -124,7 +124,7 @@ typedef struct TkWord2 TkWord;
 /* 在初始化单词表（标识符+关键字）时的存储类型与单词 */
 struct charArray{
     char word[20];
-    char type[30];
+    char type[50];
 };
 
 
@@ -142,8 +142,68 @@ char *tkType = NULL;
 
 
 
+/* 语法分析全局变量 */
 
-/* 全局方法 */
+/* 语法缩进功能 */
+int syntax_state;   //语法状态
+int syntax_level;   //缩进级别
+
+/* external_declaration解析声明，为避免重复造轮子
+    通过参数识别声明的变量类型（函数内部和外部）
+*/
+int SC_GLOBAL = 0;  //函数外部解析状态
+int SC_LOCAL = 1;   //函数内部解析状态
+
+int SC_MEMBER = 3;
+
+/* 语法状态枚举值 */
+enum e_SyntaxState{
+    SNTX_NUL,   //空状态，没有缩进
+    SNTX_SP,    //空格
+    SNTX_LF_HT, //换行并缩进，每一个声明，函数定义，语句结束都要设置
+    SNTX_DELAY  //延迟到取出下一个单词后确定输出格式
+};
+
+// 语法功能类型
+char *grammarType;
+
+/* 语法分析结果类型存储数组 */
+struct charArray grammarTypeArray[50]={
+    {"", "<无符号整数>\n<整数>"},         //0
+    {"", "<整数>"},         //1
+    {"", "<常量定义>"},         //2
+    {"", "<常量说明>"},         //3
+    {"", "<变量定义初始化>"},         //4
+    {"", "<变量定义>"},         //5
+    {"", "<声明头部>"},         //6
+    {"", "<参数表>"},         //7
+    {"", "<因子>"},         //8
+    {"", "<项>"},         //9
+    {"", "<表达式>"},         //10
+    {"", "<赋值语句>"},         //11
+    {"", "<语句>"},         //12
+    {"", "<返回语句>"},         //13
+    {"", "<语句列>"},         //14
+    {"", "<复合语句>"},         //15
+    {"", "<有返回值函数定义>"},         //16
+    {"", "<字符串>"},         //17
+    {"", "<写语句>"},         //18
+    {"", "<有返回值函数调用语句>"},         //19
+    {"", "<主函数>"},         //20
+    {"", "<程序>"},         //21
+    {"", "<有返回值函数调用语句>"},         //22
+    {"", "<有返回值函数调用语句>"},         //23
+    {"",""}                 //定义一个空字符，用于初始化
+};
+
+// 是否是常量定义
+int isConstDef=0;   //1-是；0-不是
+
+
+
+/*============================================
+ 全局方法 
+ =============================================*/
 /* 从源文件读取一个字符 */
 void getch(){
     ch=getc(fin); 

@@ -19,15 +19,18 @@ void handle_exception(int stage,int level,char *fmt, va_list ap){
     vsprintf(buf, fmt, ap);
     if(stage == STAGE_COMPILE){
         if(level == LEVEL_WARNING){
-            printf("%s(第%d行):编译警告:%s!\n","filename",line_num,buf);
+            // printf("%s(第%d行):编译警告:%s!\n","filename",line_num,buf);
+            printf("%s(row %d):compile warning:%s!\n","filename",line_num,buf);
         }
         else{
-            printf("%s(第%d行):编译错误:%s!\n","filename",line_num,buf);
+            // printf("%s(第%d行):编译错误:%s!\n","filename",line_num,buf);
+            printf("%s(row %d):compile error:%s!\n","filename",line_num,buf);
             exit(-1);
         }
     }
     else{
-        printf("链接错误:%s!\n",buf);
+        // printf("链接错误:%s!\n",buf);
+        printf("link error:%s!\n",buf);
         exit(-1);
     }
 }
@@ -51,7 +54,7 @@ void error(char *fmt,...){
 /* 提示错误，缺少语法成分 */
 void expect(char *msg){
     // error("缺少%s",msg);
-    cout<<"缺少"<<msg;
+    cout<<" ---->lack of "<<msg;
 }
 
 /* 取得单词v所代表的源码字符串 */
@@ -74,7 +77,7 @@ char *get_tkstr(int v){
 void skip(int c){
     if(token != c){
         // error("缺少'%s'",get_tkstr(c));
-        cout<<"缺少"<<get_tkstr(c);
+        cout<<" --->lack of "<<get_tkstr(c);
     }
     get_token();
 }

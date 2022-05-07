@@ -52,7 +52,8 @@ void dynstring_realloc(DynString *pstr, int new_size){
     }
     data = (char*)realloc(pstr->data, capacity);
     if(!data){
-        printf("内存分配失败");
+        // printf("内存分配失败");
+        printf("allocation memery failed!");
     }
     pstr->capacity = capacity;
     pstr->data = data;
@@ -86,7 +87,8 @@ void dynarray_realloc(DynArray *parr, int new_size){
     }
     data = (void **)realloc(parr->data, capacity);
     if(!data){
-        printf("内存分配失败");
+        // printf("内存分配失败");
+        printf("allocation memery failed!");
     }
     parr->capacity = capacity;
     parr->data = data;
@@ -190,7 +192,8 @@ void *mallocz(int size){
     void *ptr;
     ptr = malloc(size);
     if(!ptr && size){
-        printf("内存分配失败");
+        // printf("内存分配失败");
+        printf("allocation memery failed!");
     }
     memset(ptr, 0, size);
     return ptr;

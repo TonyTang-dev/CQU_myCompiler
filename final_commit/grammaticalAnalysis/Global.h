@@ -84,6 +84,9 @@ int line_num = 0;
 FILE *fin;
 FILE *fout;
 
+FILE *fin2;
+FILE *fout2;
+
 /* 整数 */
 int tkvalue=0;
 

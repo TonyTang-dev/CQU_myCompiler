@@ -3,32 +3,34 @@ INTTK int
 IDENFR cONst1
 ASSIGN =
 INTCON 001
-COMMA ,
 <无符号整数>
 <整数>
+COMMA ,
 IDENFR const2
 ASSIGN =
 MINU -
 INTCON 100
-SEMICN ;
 <无符号整数>
 <整数>
 <常量定义>
+SEMICN ;
 CONSTTK const
 CHARTK char
 IDENFR const3
 ASSIGN =
 CHARCON _
-SEMICN ;
-<变量定义>
 <常量定义>
+SEMICN ;
 INTTK int
+<常量说明>
 IDENFR change1
 SEMICN ;
+<变量定义无初始化>
 <变量定义>
 CHARTK char
 IDENFR change3
 SEMICN ;
+<变量定义无初始化>
 <变量定义>
 INTTK int
 IDENFR gets1
@@ -44,17 +46,35 @@ RPARENT )
 LBRACE {
 IDENFR change1
 ASSIGN =
+<赋值语句>
 IDENFR var1
+<因子>
+<项>
 PLUS +
 IDENFR var2
+<因子>
+<项>
 SEMICN ;
+<表达式>
 RETURNTK return
+<语句>
+<语句列>
 LPARENT (
 IDENFR change1
+<因子>
+<项>
 RPARENT )
+<表达式>
 SEMICN ;
+<表达式>
+<返回语句>
 RBRACE }
+<语句>
+<语句列>
+<复合语句>
 VOIDTK void
+<复合语句>
+<有返回值函数定义>
 MAINTK main
 LPARENT (
 <声明头部>
@@ -63,18 +83,35 @@ LBRACE {
 PRINTFTK printF
 LPARENT (
 STRCON Hello World
+<字符串>
 RPARENT )
+<表达式>
 SEMICN ;
+<表达式>
 PRINTFTK printf
+<写语句>
+<语句>
+<语句列>
 LPARENT (
 IDENFR gets1
 LPARENT (
 INTCON 10
+<无符号整数>
+<整数>
 COMMA ,
 INTCON 20
+<无符号整数>
+<整数>
 RPARENT )
 RPARENT )
+<表达式>
 SEMICN ;
+<表达式>
 RBRACE }
+<写语句>
+<语句>
+<语句列>
+<复合语句>
+<复合语句>
 <主函数>
 <程序>

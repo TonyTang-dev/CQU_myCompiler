@@ -1,4 +1,4 @@
-#include<windows.h>
+// #include<windows.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdarg.h>
@@ -522,7 +522,7 @@ void get_token(){
 
 /* 词法着色 */
 void color_token(int lex_state){
-    HANDLE h=GetStdHandle(STD_OUTPUT_HANDLE);
+    // HANDLE h=GetStdHandle(STD_OUTPUT_HANDLE);
     char *p;
 
     // 定义一个字符串变量专门存储输出到文件的内容
@@ -536,7 +536,7 @@ void color_token(int lex_state){
             */
         //    根据enum枚举对象，>TK_IDENT的就是标识符和其他对象了，用灰色标注
             if(token >= TK_IDENT){
-                SetConsoleTextAttribute(h, FOREGROUND_INTENSITY);
+                // SetConsoleTextAttribute(h, FOREGROUND_INTENSITY);
                 // 由于每次处理标识符（包括关键字和标识符），都存储了源格式tkstr，所以现在
                 // 直接输出源格式即可（输出到控制台）
                 // 同样输出到文件也是，保持源格式的话就用tkstr
@@ -551,7 +551,7 @@ void color_token(int lex_state){
             }
             // >KW_CHAR<TK_IDENT的是关键字部分
             else if(token >= KW_CHAR){
-                SetConsoleTextAttribute(h,FOREGROUND_GREEN|FOREGROUND_INTENSITY);
+                // SetConsoleTextAttribute(h,FOREGROUND_GREEN|FOREGROUND_INTENSITY);
                 get_tkstr(token);   //调用一下get_tkstr()，让其返回字符串的同时设置全局类型变量
                 p = tkstr.data;
                 out2File = tkstr.data;
@@ -559,14 +559,14 @@ void color_token(int lex_state){
             }
             // >TK_CINT<TK_CSTR的是常量部分
             else if(token >= TK_CINT){
-                SetConsoleTextAttribute(h,FOREGROUND_RED|FOREGROUND_GREEN);
+                // SetConsoleTextAttribute(h,FOREGROUND_RED|FOREGROUND_GREEN);
                 p=get_tkstr(token);     //函数返回的是带引号的，为了照顾控制台输出的
                 out2File = tkstr.data;  //tkstr是不带引号的内容
                 cout<<p;
             }
             // 其他的就是排在最前面的是运算符分隔符部分
             else{
-                SetConsoleTextAttribute(h,FOREGROUND_RED|FOREGROUND_INTENSITY);
+                // SetConsoleTextAttribute(h,FOREGROUND_RED|FOREGROUND_INTENSITY);
                 p=get_tkstr(token);
                 out2File = p;
                 if(token != TK_EOF)
